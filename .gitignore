@@ -1,0 +1,23 @@
+# Dependências de desenvolvimento / testes locais
+node_modules/
+package-lock.json
+
+# Arquivos sensíveis e configurações locais (NUNCA subir chaves de API!)
+*settings.json
+*.env
+*.env.*
+
+# Caches de tradução locais gerados durante gameplay/testes
+*cache_*.json
+*id_map_*.json
+
+# Logs, Dumps e arquivos temporários do motor / sistema
+*.log
+*.tmp
+*.bak
+*.dmp
+Thumbs.db
+.DS_Store
+
+# Diretório de build/upload temporário
+TmpData/

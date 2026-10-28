@@ -1,0 +1,38 @@
+[h1]JA3 AI Translator — 100% Native In-Game Background Mod Translator[/h1]
+
+Want to play Steam Workshop mods written in English, Russian, Chinese, German, or any other language seamlessly in your own language?
+[b]JA3 AI Translator[/b] automatically scans your active/installed [b]Jagged Alliance 3[/b] mods, detects each mod's original source language, and translates all mod texts [b]in the background directly inside the game[/b] using AI — with [b]zero external `.exe` tools required![/b]
+
+[hr][/hr]
+
+[h2]Key Features[/h2]
+[list]
+[*][b]100% Native In-Game Background Translation:[/b] Keep playing normally while mod strings are translated in the background and injected live into game memory.
+[*][b]UI Matches Your Game Language Automatically:[/b] All menus, Mod Options, HUD progress indicators, and dialogs dynamically match your active Jagged Alliance 3 language in real time (English, Brazilian Portuguese, Spanish, French, German, Russian, Polish, Indonesian, Simplified Chinese, and Traditional Chinese).
+[*][b]Persistent Local Cache (Instant Restore):[/b] Every translated string is saved to disk (`AppData\Roaming\Jagged Alliance 3\JA3TradutorIA`) and restored in under 1 second every time you launch the game — you never pay or wait twice for the same line.
+[*][b]Automatic Free vs. Paid API Quota Calibration:[/b] Automatically detects whether your API key is [i]Free Tier[/i] or [i]Paid Tier[/i] and tunes batch size, request delay, and smart HTTP 429 retry/backoff so you never hit quota walls.
+[*][b]Full Haemimont Tag & Variable Protection:[/b] Safely preserves all tactical tags, variables, icons, and rich formatting (`<MercName>`, `<color ...>`, `<image ...>`, `[b]`, `%d`, `%s`).
+[*][b]Multi-Provider Cloud & Local Offline AI Support:[/b]
+  • [b]Google Gemini[/b] (supports Free Tier keys from Google AI Studio — `gemini-2.5-flash` / `gemini-2.5-flash-lite`)
+  • [b]OpenAI[/b] (`gpt-4.1-mini`, `gpt-4o-mini`, etc.)
+  • [b]OpenRouter[/b] / [b]Groq[/b] / [b]DeepSeek[/b]
+  • [b]Ollama[/b] or [b]LM Studio[/b] (100% local & offline on your own GPU with zero API keys or rate limits!)
+[/list]
+
+[hr][/hr]
+
+[h2]Quick Setup (30 Seconds)[/h2]
+[olist]
+[*]Subscribe and [b]enable JA3 AI Translator[/b] in the Jagged Alliance 3 Mod Manager.
+[*]Press [b]Ctrl + Shift + T[/b] anywhere in-game (or click the [b]AI TRANSLATOR[/b] button in the Mod Manager or Pause Menu).
+[*]Select your [b]AI Provider[/b] and paste your [b]API Key[/b] (e.g., a free Google AI Studio Gemini key, or pick Ollama / LM Studio for local offline translation) and choose your [b]Target Language[/b] (defaults to [i]Auto - Game Language[/i]).
+[*]Done! All active mods are scanned, translated in the background, and saved automatically.
+[/olist]
+
+[hr][/hr]
+
+[h2]Privacy & Save-Game Safety[/h2]
+[list]
+[*][b]100% Private:[/b] Your API key is stored strictly on your own PC inside `AppData\Roaming\Jagged Alliance 3\JA3TradutorIA` and is only sent directly to your chosen AI provider.
+[*][b]100% Save-Game Safe:[/b] Translates `TranslationTable` entries in memory cleanly at runtime — safe to enable or disable mid-campaign at any time!
+[/list]

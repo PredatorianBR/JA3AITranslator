@@ -1,0 +1,38 @@
+[h1]JA3 Tradutor IA — Auto-Tradutor de Mods em Segundo Plano (100% Dentro do Jogo)[/h1]
+
+Cansado de jogar excelentes mods da Steam Workshop em inglês, russo ou chinês enquanto o seu [b]Jagged Alliance 3[/b] está em Português?
+O [b]JA3 Tradutor IA[/b] detecta automaticamente os mods instalados/ativos, identifica o idioma original de cada mod e traduz todos os textos [b]diretamente dentro do jogo em segundo plano[/b] usando Inteligência Artificial — [b]sem precisar instalar ou abrir nenhum programa `.exe` externo![/b]
+
+[hr][/hr]
+
+[h2]Principais Recursos[/h2]
+[list]
+[*][b]100% Nativo em Background:[/b] Jogue normalmente enquanto as traduções acontecem em segundo plano e entram ao vivo na memória do jogo.
+[*][b]Interface no Mesmo Idioma do Jogo:[/b] Todos os menus, opções do mod, barra de progresso e atalhos adaptam-se automaticamente e em tempo real ao idioma configurado no seu Jagged Alliance 3 (Português, Inglês, Espanhol, Francês, Alemão, Russo, Polonês, Indonésio e Chinês).
+[*][b]Salvamento e Restauração Automática:[/b] Todas as linhas traduzidas ficam salvas permanentemente em cache no seu PC (`AppData\Roaming\Jagged Alliance 3\JA3TradutorIA`) e são reaplicadas instantaneamente em menos de 1 segundo sempre que você abrir o jogo.
+[*][b]Detecção Inteligente de Cota (Chave Gratuita vs. Paga):[/b] Detecta automaticamente se sua chave de API é [i]Free Tier[/i] ou [i]Paid Tier[/i] e calibra sozinho o tamanho dos lotes, intervalo entre requisições e backoff contra erros HTTP 429.
+[*][b]Proteção Total de Tags do Motor Haemimont:[/b] Preserva 100% intactas variáveis táticas, cores, ícones e formatações (`<MercName>`, `<color ...>`, `<image ...>`, `[b]`, `%d`, `%s`).
+[*][b]Suporte a Múltiplos Provedores de IA (Nuvem ou 100% Offline):[/b]
+  • [b]Google Gemini[/b] (suporta chave gratuita do Google AI Studio — `gemini-2.5-flash` / `gemini-2.5-flash-lite`)
+  • [b]OpenAI[/b] (`gpt-4.1-mini`, `gpt-4o-mini`, etc.)
+  • [b]OpenRouter[/b] / [b]Groq[/b] / [b]DeepSeek[/b]
+  • [b]Ollama[/b] ou [b]LM Studio[/b] (100% local/offline na sua GPU, sem chave de API e sem limite de cota!)
+[/list]
+
+[hr][/hr]
+
+[h2]Como Usar (Em 30 Segundos)[/h2]
+[olist]
+[*]Inscreva-se no mod e [b]ative-o no Gerenciador de Mods[/b] do Jagged Alliance 3.
+[*]Dentro do jogo, pressione [b]Ctrl + Shift + T[/b] (ou clique no botão [b]TRADUTOR IA[/b] no Gerenciador de Mods ou no Menu de Pausa).
+[*]Escolha o [b]Provedor de IA[/b] e cole sua [b]Chave de API[/b] (ex.: chave gratuita do Google AI Studio para o Gemini, ou selecione Ollama/LM Studio para uso local).
+[*]Pronto! O mod detectará automaticamente o idioma de cada mod instalado e traduzirá tudo em segundo plano, salvando cada lote em tempo real.
+[/olist]
+
+[hr][/hr]
+
+[h2]Privacidade & Compatibilidade[/h2]
+[list]
+[*][b]100% Seguro e Privado:[/b] Sua chave de API fica salva apenas localmente na sua pasta `AppData` pessoal e é enviada exclusivamente ao endpoint oficial do provedor de IA escolhido por você.
+[*][b]Compatibilidade Universal:[/b] Funciona com mods de armas, mercenários, campanhas, missões, perks, overhaul (ex.: Vanilla Redux, Action Bar Plus, Audaki's, etc.) e pode ser ativado ou desativado a qualquer momento sem afetar seus saves!
+[/list]
