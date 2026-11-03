@@ -350,20 +350,34 @@ function M.RefreshGameUiTexts()
 	end
 end
 
--- Aplica uma chave "opt|<modId>|<optName>|<field>" nas ModItemOption carregadas
+-- Aplica uma chave "opt|<modId>|<optName>|<field>" ou "opt|<modId>|<optName>|Choice|<origChoice>" nas ModItemOption carregadas
 local function apply_mod_option_entry(modsDict, key, translatedText)
 	if type(modsDict) ~= "table" then return false end
+
+	-- Caso 1: DisplayName ou Help
 	local modId, optName, field = key:match("^opt|([^|]+)|([^|]+)|([^|]+)$")
-	if not modId or not optName or (field ~= "DisplayName" and field ~= "Help") then
+	local choiceVal = nil
+	if not modId then
+		-- Caso 2: Escolhas de ModItemOptionChoice
+		modId, optName, choiceVal = key:match("^opt|([^|]+)|([^|]+)|Choice|(.+)$")
+	end
+
+	if not modId or not optName then
 		return false
 	end
+
 	local modDef = modsDict[modId]
-	if not modDef or type(modDef.items) ~= "table" then
+	if not modDef then
 		return false
 	end
+
 	local updated = false
-	for _, item in ipairs(modDef.items) do
-		if type(item) == "table" and item.name == optName then
+
+	-- Função auxiliar para aplicar na opção
+	local function update_option_item(item)
+		if type(item) ~= "table" or item.name ~= optName then return end
+
+		if field == "DisplayName" or field == "Help" then
 			local origField = "__ja3tr_orig_" .. field
 			if rawget(item, origField) == nil and type(item[field]) == "string" then
 				rawset(item, origField, item[field])
@@ -374,6 +388,23 @@ local function apply_mod_option_entry(modsDict, key, translatedText)
 			end
 		end
 	end
+
+	-- Aplica via GetOptionItems() ou modDef.items
+	if type(modDef.GetOptionItems) == "function" then
+		local ok, optItems = pcall(modDef.GetOptionItems, modDef)
+		if ok and type(optItems) == "table" then
+			for _, item in ipairs(optItems) do
+				update_option_item(item)
+			end
+		end
+	end
+
+	if type(modDef.items) == "table" then
+		for _, item in ipairs(modDef.items) do
+			update_option_item(item)
+		end
+	end
+
 	if updated and type(modDef.options) == "table" then
 		modDef.options.properties = nil
 	end

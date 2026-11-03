@@ -221,6 +221,39 @@ function M.ScanItemsLuaForModOptions(modId, src, outEntries)
 					end
 				end
 			end
+
+			-- Escaneia itens em ChoiceList (para ModItemOptionChoice)
+			local cStart, cEnd = block:find("['\"]ChoiceList['\"]%s*,%s*%{")
+			if cEnd then
+				local cDepth = 1
+				local cPos = cEnd + 1
+				local bLen = #block
+				while cPos <= bLen and cDepth > 0 do
+					local b = block:byte(cPos)
+					if b == 34 or b == 39 or b == 91 then
+						local strVal, nextPos = parse_lua_string_at(block, cPos)
+						if strVal and M.IsTranslatableText(strVal) then
+							local key = "opt|" .. modId .. "|" .. optName .. "|Choice|" .. strVal
+							if not outEntries[key] then
+								outEntries[key] = {
+									key = key,
+									numId = nil,
+									sourceText = strVal,
+								}
+							end
+						end
+						cPos = (nextPos and nextPos > cPos) and nextPos or (cPos + 1)
+					elseif b == 123 then
+						cDepth = cDepth + 1
+						cPos = cPos + 1
+					elseif b == 125 then
+						cDepth = cDepth - 1
+						cPos = cPos + 1
+					else
+						cPos = cPos + 1
+					end
+				end
+			end
 		end
 
 		pos = i
@@ -229,11 +262,62 @@ end
 
 -- Percorre objetos já carregados em mod.items na memória
 local function walk_loaded_mod_items(modDef, outEntries)
-	if type(modDef.items) ~= "table" then return end
+	if type(modDef) ~= "table" then return end
 
 	local isT = rawget(_ENV, "IsT")
 	local tGetId = rawget(_ENV, "TGetID")
+	local isKindOf = rawget(_ENV, "IsKindOf")
 	local visited = {}
+
+	local function register_mod_option_item(item)
+		if type(item) ~= "table" then return end
+		local optName = rawget(item, "name") or item.name
+		if type(optName) ~= "string" or optName == "" then return end
+
+		for _, field in ipairs({ "DisplayName", "Help" }) do
+			local orig = rawget(item, "__ja3tr_orig_" .. field)
+			local val = (type(orig) == "string" and orig) or rawget(item, field) or item[field]
+			if type(val) == "string" and M.IsTranslatableText(val) then
+				local key = "opt|" .. modDef.id .. "|" .. optName .. "|" .. field
+				if not outEntries[key] then
+					outEntries[key] = {
+						key = key,
+						numId = nil,
+						sourceText = val,
+					}
+				end
+			end
+		end
+
+		local choices = rawget(item, "ChoiceList") or item.ChoiceList
+		if type(choices) == "table" then
+			for _, choiceStr in ipairs(choices) do
+				if type(choiceStr) == "string" and M.IsTranslatableText(choiceStr) then
+					local key = "opt|" .. modDef.id .. "|" .. optName .. "|Choice|" .. choiceStr
+					if not outEntries[key] then
+						outEntries[key] = {
+							key = key,
+							numId = nil,
+							sourceText = choiceStr,
+						}
+					end
+				end
+			end
+		end
+	end
+
+	-- 1. Se o mod possuir GetOptionItems, usa diretamente a API nativa do JA3
+	if type(modDef.GetOptionItems) == "function" then
+		local ok, optItems = pcall(modDef.GetOptionItems, modDef)
+		if ok and type(optItems) == "table" then
+			for _, opt in ipairs(optItems) do
+				register_mod_option_item(opt)
+			end
+		end
+	end
+
+	-- 2. Varredura recursiva nos itens carregados
+	if type(modDef.items) ~= "table" then return end
 
 	local function visit(tbl, depth)
 		if depth > 14 or type(tbl) ~= "table" or visited[tbl] then return end
@@ -260,25 +344,13 @@ local function walk_loaded_mod_items(modDef, outEntries)
 			return
 		end
 
-		local cls = rawget(tbl, "class")
-		if type(cls) == "string" and cls:find("^ModItemOption") then
-			local optName = rawget(tbl, "name")
-			if type(optName) == "string" and optName ~= "" then
-				for _, field in ipairs({ "DisplayName", "Help" }) do
-					local orig = rawget(tbl, "__ja3tr_orig_" .. field)
-					local val = (type(orig) == "string" and orig) or rawget(tbl, field)
-					if type(val) == "string" and M.IsTranslatableText(val) then
-						local key = "opt|" .. modDef.id .. "|" .. optName .. "|" .. field
-						if not outEntries[key] then
-							outEntries[key] = {
-								key = key,
-								numId = nil,
-								sourceText = val,
-							}
-						end
-					end
-				end
-			end
+		local cls = rawget(tbl, "class") or tbl.class
+		local isOpt = (type(cls) == "string" and cls:find("^ModItemOption"))
+			or (isKindOf and isKindOf(tbl, "ModItemOption"))
+			or (rawget(tbl, "DisplayName") ~= nil and rawget(tbl, "name") ~= nil)
+
+		if isOpt then
+			register_mod_option_item(tbl)
 		end
 
 		for k, v in pairs(tbl) do
@@ -483,7 +555,7 @@ function M.ScanSingleMod(modDef, targetLangMeta, settings)
 					local fErr, src = M.AsyncFileToString(filePath)
 					if not fErr and type(src) == "string" and #src > 0 then
 						M.ScanLuaSourceForTs(src, entries)
-						if lowName:find("items%.lua$") and type(modDef.items) ~= "table" then
+						if lowName:find("items%.lua$") then
 							M.ScanItemsLuaForModOptions(modDef.id, src, entries)
 						end
 					end

@@ -1186,14 +1186,17 @@ function M.LocalizeOptionsObject(optObj)
 end
 
 -- Hook de classe: o menu Opções -> Mods chama option:GetOptionMeta() de cada ModItemOption do jogo.
--- Envolvemos esse método (e os das subclasses) para traduzir apenas as opções DESTE mod.
--- Inativo durante Mod Editor / upload para nunca interferir no salvamento.
+-- Envolvemos esse método (e os das subclasses) para traduzir tanto as opções do próprio JA3TradutorIA
+-- quanto as opções de QUALQUER outro mod instalado/ativo usando nosso banco de traduções.
+-- Inativo durante Mod Editor / upload para nunca interferir no salvamento de mods.
 function M.InstallOptionsHook()
 	local classes = rawget(_ENV, "g_Classes")
 	if type(classes) ~= "table" then
 		return
 	end
 	local myId = rawget(_ENV, "CurrentModId") or "JA3TradutorIA"
+	local untranslated = rawget(_ENV, "Untranslated") or function(str) return str end
+
 	for _, cls in pairs(classes) do
 		if type(cls) == "table" and rawget(cls, "GetOptionMeta") and not rawget(cls, "_ja3TradutorHooked") then
 			local orig = rawget(cls, "GetOptionMeta")
@@ -1201,14 +1204,80 @@ function M.InstallOptionsHook()
 				rawset(cls, "_ja3TradutorHooked", true)
 				cls.GetOptionMeta = function(self, ...)
 					local meta = orig(self, ...)
-					local mod = type(self) == "table" and self.mod
-					if type(meta) == "table" and type(mod) == "table" and mod.id == myId then
-						local toolsFn = rawget(_ENV, "AreModdingToolsActive")
-						local plat = rawget(_ENV, "Platform")
-						if not ((toolsFn and toolsFn()) or (type(plat) == "table" and plat.ged)) then
-							pcall(M.LocalizePropMeta, meta)
+					if type(meta) ~= "table" then
+						return meta
+					end
+
+					-- Proteção estrita do Mod Editor / Ged para uploads seguros
+					local toolsFn = rawget(_ENV, "AreModdingToolsActive")
+					local plat = rawget(_ENV, "Platform")
+					if (toolsFn and toolsFn()) or (type(plat) == "table" and plat.ged) then
+						return meta
+					end
+
+					local mod = (type(self) == "table" and self.mod) or nil
+					local modId = (mod and mod.id) or meta.modId
+					local optName = (type(self) == "table" and self.name) or meta.id
+
+					-- 1. Se for o próprio mod JA3TradutorIA, usa a tabela nativa multilíngue de UI (10 idiomas)
+					if modId == myId or modId == "JA3TradutorIA" then
+						pcall(M.LocalizePropMeta, meta)
+						return meta
+					end
+
+					-- 2. Para todos os outros mods, consulta ActiveIdMap e ActiveTextCache
+					local idMap = M.ActiveIdMap
+					local textCache = M.ActiveTextCache
+
+					-- Tradução do DisplayName (meta.name)
+					local rawDisp = type(self) == "table" and (rawget(self, "__ja3tr_orig_DisplayName") or rawget(self, "DisplayName"))
+					if not rawDisp or rawDisp == "" then
+						rawDisp = optName
+					end
+
+					local dispTrans = nil
+					if modId and optName and idMap then
+						dispTrans = idMap["opt|" .. modId .. "|" .. optName .. "|DisplayName"]
+					end
+					if not dispTrans and textCache and type(rawDisp) == "string" and rawDisp ~= "" then
+						dispTrans = textCache[rawDisp]
+					end
+					if type(dispTrans) == "string" and dispTrans ~= "" then
+						meta.name = untranslated(dispTrans)
+					end
+
+					-- Tradução do Help / Tooltip (meta.help)
+					local rawHelp = type(self) == "table" and (rawget(self, "__ja3tr_orig_Help") or rawget(self, "Help"))
+					local helpTrans = nil
+					if modId and optName and idMap then
+						helpTrans = idMap["opt|" .. modId .. "|" .. optName .. "|Help"]
+					end
+					if not helpTrans and textCache and type(rawHelp) == "string" and rawHelp ~= "" then
+						helpTrans = textCache[rawHelp]
+					end
+					if type(helpTrans) == "string" and helpTrans ~= "" then
+						meta.help = untranslated(helpTrans)
+					end
+
+					-- Tradução dos itens em listas de escolha (ModItemOptionChoice)
+					if type(meta.items) == "table" then
+						for _, choiceItem in ipairs(meta.items) do
+							if type(choiceItem) == "table" then
+								local cVal = tostring(choiceItem.value or "")
+								local cTrans = nil
+								if modId and optName and idMap then
+									cTrans = idMap["opt|" .. modId .. "|" .. optName .. "|Choice|" .. cVal]
+								end
+								if not cTrans and textCache and cVal ~= "" then
+									cTrans = textCache[cVal]
+								end
+								if type(cTrans) == "string" and cTrans ~= "" then
+									choiceItem.text = untranslated(cTrans)
+								end
+							end
 						end
 					end
+
 					return meta
 				end
 			end
